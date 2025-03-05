@@ -83,7 +83,6 @@ transdecoder <- transdecoder %>%
   separate(col = Score, into = c("ID0", "Score"), sep = "=")
 transdecoder <- subset(transdecoder, select = -ID0)
 
-transdecoder %>% 
 
 
 
