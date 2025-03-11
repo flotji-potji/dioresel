@@ -19,8 +19,8 @@ out_dir=${raw_data_dir}/pop_allel_freq/pair_cal_spn
 ann_vcf=${pair_ann_dir}/vieref_cal_spn.ann.miss-syno.vcf.gz
 sp1_sample=${pair_var_dir}/calciphila.samples
 sp2_sample=${pair_var_dir}/sppicnga.samples
-sp1_out=${out_dir}/$(basename ${sp1_sample%.*})
-sp2_out=${out_dir}/$(basename ${sp2_sample%.*})
+sp1_out=${out_dir}/$(basename ${ann_vcf%.*}).$(basename ${sp1_sample%.*})
+sp2_out=${out_dir}/$(basename ${ann_vcf%.*}).$(basename ${sp2_sample%.*})
 
 # EXECUTION
 
