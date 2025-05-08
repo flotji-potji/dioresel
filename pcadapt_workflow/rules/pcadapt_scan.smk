@@ -8,7 +8,7 @@ rule plink_convert_bed:
     shell:
         r"""
         plink --vcf {input} --double-id --allow-extra-chr \
-              --make-bed --out {params.output}
+              --make-bed --out {params.output_prefix}
         """
 
 rule pcadapt_scan_and_plot:
@@ -21,7 +21,11 @@ rule pcadapt_scan_and_plot:
         raw_output_prefix="raw_data/pcadapt/pair_{sp1}_{sp2}/single/",
         k_param=1,
         plot_title="{sp1} - {sp2}",
-        ld_thin=FALSE
+        ld_thin="no",
+        vie_genome_size=1523932088
+    resources:
+        mem_mb=4000,
+        cpus_per_task=2
     script:
         "../scripts/pcadapt_scan_and_plot.R"
 
@@ -35,6 +39,10 @@ rule pcadapt_ldthin_scan_and_plot:
         raw_output_prefix="raw_data/pcadapt/pair_{sp1}_{sp2}/ldthin/",
         k_param=1,
         plot_title="LD-thin {sp1} - {sp2}",
-        ld_thin=FALSE
+        ld_thin="yes",
+        vie_genome_siz=1523932088
+    resources:
+        mem_mb=4000,
+        cpus_per_task=2
     script:
         "../scripts/pcadapt_scan_and_plot.R"

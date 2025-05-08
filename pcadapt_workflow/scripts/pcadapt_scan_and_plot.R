@@ -1,6 +1,17 @@
 ### ENVIRONMENT
-library(pcadapt)
 library(tidyverse)
+if (!require(pcadapt)) {
+  install.packages("pcadapt", repos = "https://cran.wu.ac.at/")
+  library(pcadapt)
+} else {
+  library(pcadapt)
+}
+options(error = quote({
+  dump.frames(to.file=T, dumpto='last.dump')
+  load('last.dump.rda')
+  print(last.dump)
+  q()
+}))
 
 ### FUNCTIONS
 get_sample_names <- function(file) {
@@ -72,9 +83,9 @@ input_bed <- snakemake@input[[1]]
 input_prefix <- snakemake@params$input_prefix
 output_file <- snakemake@output[[1]]
 raw_output_prefix <- snakemake@params$raw_output_prefix
-results_output_prefix <- snakemake@params$results_output_prefix
-pcadapt.k_param <- snakemake@params$k_params
+pcadapt.k_param <- snakemake@params$k_param
 plot.title <- snakemake@params$plot_title
+genome_size <- snakemake@params$vie_genome_size
 
 # create output dirs if not already present
 ifelse(!dir.exists(file.path(raw_output_prefix)),
@@ -83,11 +94,15 @@ ifelse(!dir.exists(file.path(raw_output_prefix)),
 
 # pcadapt variables
 pcadapt.file <- read.pcadapt(input = input_bed, type = "bed")
+window_size <- 10000
+ld_thin.threshold <- 0.1
+output.pcadapt_object <- paste0(raw_output_prefix, "pcadapt_object.Robject")
 
 # plotting output-variables
-output.scree_pca <- paste0(raw_output_prefix, "scree_pca.jpg")
-output.pval <- paste0(raw_output_prefix, "manhattan_pval.jpg")
-output.padj <- paste0(raw_output_prefix, "manhattan_padj.jpg")
+output.scree <- paste0(raw_output_prefix, "plot_scree.jpg")
+output.pca <- paste0(raw_output_prefix, "plot_pca.jpg")
+output.pval <- paste0(raw_output_prefix, "plot_manhattan_pval.jpg")
+output.padj <- paste0(raw_output_prefix, "plot_manhattan_padj.jpg")
 
 ### EXECUTION
 # What do I want to include in the analysis?
@@ -95,8 +110,22 @@ output.padj <- paste0(raw_output_prefix, "manhattan_padj.jpg")
 # - 2 manhattan plots of physical SNP location with p and padj
 # - R object of pcadapt object and list of SNPs with p and padj values
 
+# create dataframe of SNP positions 
+pcadapt.df <- get_bim_vars(paste0(input_prefix, ".bim"))
+num_total_snps <- length(pcadapt.df)
+
 # Produce a pcadapt object with 20 or so k-mers to plot pca and scree
-pcadapt.diffK <- pcadapt(input = pcadapt.file, K = 20)
+if (snakemake@params$ld_thin == "yes") {
+  window_num_snps <- (num_total_snps / genome_size) * window_size
+  pcadapt.diffK <- pcadapt(input = pcadapt.file, K = 20,
+                           LD.clumping = list(size = window_num_snps,
+                                              thr = ld_thin.threshold))
+} else {
+  print("in pcadapt")
+  pcadapt.diffK <- pcadapt(input = pcadapt.file, K = 20)
+  print("out pcadapt")
+}
+
 
 # load sample name file
 population.list <- get_sample_names(paste0(input_prefix, ".nosex"))
@@ -110,23 +139,40 @@ plot.pca <- plot(pcadapt.diffK,
 
 # save plots contained in one jpg
 jpeg(
-  output.scree_pca,
+  output.scree,
   width = 25,
   height = 10,
   units = "in",
   res = 100
 )
-ggarrange(plot.scree, plot.pca, nrow = 2, ncol = 2)
+plot.scree
+dev.off()
+
+jpeg(
+  output.pca,
+  width = 25,
+  height = 10,
+  units = "in",
+  res = 100
+)
+plot.pca
 dev.off()
 
 # create pcadapt object for analysis with k_params
-pcadapt.scan <- pcadapt(pcadapt.file, K = pcadapt.k_param)
+if (snakemake@params$ld_thin == "yes") {
+  window_num_snps <- (num_total_snps / genome_size) * window_size
+  pcadapt.scan <- pcadapt(input = pcadapt.file, K = pcadapt.k_param,
+                           LD.clumping = list(size = window_num_snps,
+                                              thr = ld_thin.threshold))
+} else {
+  pcadapt.scan <- pcadapt(input = pcadapt.file, K = pcadapt.k_param)
+}
 
-# create dataframe of SNP positions, p and padj values
-pcadapt.df <- get_bim_vars(paste0(input_prefix, ".bim"))
+# add p and padj values to SNP-position dataframe
 pcadapt.df$pvalue <- pcadapt.scan$pvalues
 pcadapt.df$padj <- p.adjust(pcadapt.scan$pvalues, method = "bonferroni")
 
+# plot pcadapt results as manhattan plots
 don <- manhattan_data_frame(pcadapt.df)
 
 # manhattan plot of pcadapt p-values
@@ -160,3 +206,9 @@ plot_manhattan(don, "padj", paste("pcadapt - ", plot.title, ": p-adj")) +
         axis.text = element_text(color="black", size=25),
         axis.title = element_text(color = "black", size=25, face = "bold"))
 dev.off()
+
+# store pcadapt results as tsv file
+write.table(pcadapt.df, output_file,
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+save(pcadapt.scan, file = output.pcadapt_object)
