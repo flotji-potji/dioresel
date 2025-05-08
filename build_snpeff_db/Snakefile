@@ -1,0 +1,5 @@
+rule all:
+    input:
+        ""
+
+include: "rules/coding_sequence_discovery.smk"
