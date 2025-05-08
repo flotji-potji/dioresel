@@ -17,7 +17,7 @@ module list
 
 ### VARIABLES
 WD=/lisc/scratch/botany/frschmidt/mk_test
-db=/lisc/scratch/mirror/ncbi/2025-02-25/nr
+db=/lisc/scratch/mirror/uniprot/2025_01/uniprot_sprot/uniprot_sprot
 trans=${WD}/results/complete_orf_transdecoder/vie_exon.fa.transdecoder_dir/chunks/chunk_${SLURM_ARRAY_TASK_ID}.pep.fa
 outDir=${WD}/raw_data/blast_hits/chunks
 outFile=${outDir}/chunk_${SLURM_ARRAY_TASK_ID}.blastp.outfmt6

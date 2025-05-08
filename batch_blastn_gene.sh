@@ -22,7 +22,7 @@ ref_gff=${wd}/data/reference/vieillardii_braker_tk.gff
 ref_fa=${wd}/data/reference/vie_reference_genome/vieillardii1167c.asm.bp.p_ctg.fa
 
 raw_dir=${wd}/raw_data/reference
-gene="g10070"
+gene="g8348"
 ident_thresh="50"
 gene_fa=${raw_dir}/${gene}.fa
 

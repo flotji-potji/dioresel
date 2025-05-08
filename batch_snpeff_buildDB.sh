@@ -35,7 +35,7 @@ REF_ANNOT=${REF_DIR}/vieillardii_braker_tk.gff
 db_dir=${WD}/data/snpEff_DB/${annot_version}
 
 # CDS file
-cds_fa=${WD}/raw_data/reference/vie.cds.fa
+cds_fa=${WD}/raw_data/transdecoder_single_best/vie_exon.fa.transdecoder.trimmed.pep.fa
 
 # EXECUTION
 mkdir -p ${db_dir}
@@ -52,12 +52,12 @@ ${annot_version}.genome: Diospyros vieillardii (Ebenaceae)
 EOF
 
 # add vie reference fasta sequence to database dir
-ln -s ${REF_FASTA} ${db_dir}/sequences.fa
+ln -f -s ${REF_FASTA} ${db_dir}/sequences.fa
 # add vie reference gff file to database dir
-ln -s ${REF_ANNOT} ${db_dir}/genes.gff
+ln -f -s ${REF_ANNOT} ${db_dir}/genes.gff
 # add CDS fasta to database dir
-ln -s ${cds_fa} ${db_dir}/cds.fa
+ln -f -s ${cds_fa} ${db_dir}/protein.fa
 
 # create new vie database
 cd ${db_dir}
-java -jar $SNPEFF build -gff3 -v -noCheckProtein -dataDir ${db_dir}/../ ${annot_version}
+java -jar $SNPEFF build -gff3 -v -noCheckCds -dataDir ${db_dir}/../ ${annot_version}

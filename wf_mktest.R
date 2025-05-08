@@ -7,7 +7,7 @@ setwd("/lisc/scratch/botany/frschmidt/mk_test/")
 
 # VARIABLES
 
-vcf_path <- "raw_data/snpeff_annotation/pair_cal_spn/vieref_cal_spn.ann.miss-syno.vcf.gz"
+vcf_path <- "raw_data/snpeff_annotation/pair_fla_spn/vieref_fla_spn.ann.vcf.ann.miss-syno.vcf.gz"
 vcf_file <- readLines(vcf_path)
 
 vcf_SNPs <- data.frame(vcf_file[grep(pattern="#CHROM",vcf_file):length(vcf_file)])
@@ -17,7 +17,7 @@ vcf_SNPs <- vcf_SNPs[-1,]
 colnames(vcf_SNPs)[1] <- "scaffold"
 
 # read in allele frequencies (the output from vcftools is a bit unpractical, so we split the columns)
-outgroup_freq_path <- "raw_data/pop_allel_freq/pair_cal_spn/calciphila.frq"
+outgroup_freq_path <- "raw_data/pop_allel_freq/pair_fla_spn/vieref_fla_spn.ann.vcf.fla.frq"
 outgroup_freq <- read.delim(outgroup_freq_path, header=FALSE, skip=1)
 colnames(outgroup_freq) <- c("scaffold","pos","n_alleles","n_chromosomes","ref","alt")
 outgroup_freq <- separate(outgroup_freq,ref,c("ref_allele","ref_freq"), ":")
@@ -25,7 +25,7 @@ outgroup_freq <- separate(outgroup_freq,alt,c("alt_allele","alt_freq"), ":")
 outgroup_freq$ref_freq<-as.numeric(outgroup_freq$ref_freq)
 outgroup_freq$alt_freq<-as.numeric(outgroup_freq$alt_freq)
 
-target_freq_path <- "raw_data/pop_allel_freq/pair_cal_spn/sppicnga.frq"
+target_freq_path <- "raw_data/pop_allel_freq/pair_fla_spn/vieref_fla_spn.ann.vcf.spn.frq"
 target_freq <- read.delim(target_freq_path, header=FALSE, skip=1)
 colnames(target_freq) <- c("scaffold","pos","n_alleles","n_chromosomes","ref","alt")
 target_freq <- separate(target_freq,ref,c("ref_allele","ref_freq"), ":") # separate columns into new columns based on delimiter ":"
@@ -49,12 +49,6 @@ vcf_SNPs$scaffold <- factor(vcf_SNPs$scaffold) # reset factor levels
 
 ## count pN, pS, dN, dS
 
-# create columns with 0s
-vcf_SNPs$pN<-0
-vcf_SNPs$pS<-0
-vcf_SNPs$dN<-0
-vcf_SNPs$dS<-0
-
 
 find_div_pol_sites <- function(out_ref, out_alt, tar_ref, tar_alt, site_ann) {
   # result vector where each position corresponds to
@@ -68,8 +62,21 @@ find_div_pol_sites <- function(out_ref, out_alt, tar_ref, tar_alt, site_ann) {
       if ("missense_variant" %in% site_ann) { res_vec[1] <- 1 }
       else if ("synonymous_variant" %in% site_ann) { res_vec[2] <- 1 }
     } 
+     
   }
+  ## To include outgroup seg sites
+  #if ((out_ref != 0 && out_alt != 0) && (tar_ref == 0 || tar_alt == 0)) {
+  #  if ((out_ref > out_alt && tar_ref == 0) || (out_ref < out_alt && tar_alt == 0)) {
+  #    if ("missense_variant" %in% site_ann) { res_vec[1] <- 1 }
+  #    else if ("synonymous_variant" %in% site_ann) { res_vec[2] <- 1 }
+  #  }
+  #}
+  
   if ((out_ref == 0 || out_alt == 0) && (tar_ref != 0 && tar_alt != 0)) {
+    if ("missense_variant" %in% site_ann) { res_vec[3] <- 1 }
+    else if ("synonymous_variant" %in% site_ann) { res_vec[4] <- 1 }
+  }
+  if ((out_ref != 0 || out_alt != 0) && (tar_ref != 0 && tar_alt != 0)) {
     if ("missense_variant" %in% site_ann) { res_vec[3] <- 1 }
     else if ("synonymous_variant" %in% site_ann) { res_vec[4] <- 1 }
   }
@@ -77,13 +84,27 @@ find_div_pol_sites <- function(out_ref, out_alt, tar_ref, tar_alt, site_ann) {
 }
 
 # Testing function
-popu <- c(1, 0, 1, 0) # e.g. REF: C, OUT: C, TAR: C
-popu <- c(0.6, 0.4, 0, 1) # e.g. REF: A, OUT: a, TAR: G
-popu <- c(0, 1, 0.6, 0.4) # e.g. REF: G, OUT: T, TAR: t
-popu <- c(1, 0, 0.6, 0.4) # e.g. REF: T, OUT: T, TAR: g
-popu <- c(0, 1, 1, 0) # e.g. REF: C, OUT: A, TAR: C
-popu <- c(0, 1, 0, 1) # e.g. REF: G, OUT: T, TAR: T
-popu <- c(0, 1, 1, NA)
+popu <- c(1, 0, 1, 0) # e.g. REF: C, OUT: C, TAR: C -> 0 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0.6, 0.4, 0, 1) # e.g. REF: A, OUT: a, TAR: G -> 0 0 0 0 => only when outgroup seg sites -> 1 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0.4, 0.6, 0, 1) # e.g. REF: A, OUT: g, TAR: G -> 0 0 0 0 => only when outgroup seg sites -> 0 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0, 1, 0.6, 0.4) # e.g. REF: G, OUT: T, TAR: t -> 0 0 1 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(1, 0, 0.6, 0.4) # e.g. REF: T, OUT: T, TAR: g -> 0 0 1 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0, 1, 1, 0) # e.g. REF: C, OUT: A, TAR: C -> 1 0 0 0 => ?
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(1, 0, 0, 1) # e.g. REF: C, OUT: C, TAR: A -> 1 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0, 1, 0, 1) # e.g. REF: G, OUT: T, TAR: T -> 0 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0, 1, 1, NA) # invalid -> 0 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0.6, 0.4, 1, 0) # e.g. REF: G, OUT: g, TAR: T -> 0 0 0 0 => only when outgroup seg sites -> 0 0 0 0
+find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
+popu <- c(0.4, 0.6, 1, 0) # e.g. REF: G, OUT: t, TAR: T -> 0 0 0 0 => only when outgroup seg sites -> 1 0 0 0
 find_div_pol_sites(popu[1], popu[2], popu[3], popu[4], "missense_variant")
 
 vcf_SNPs$sites <- matrix(0, ncol = 4, nrow = nrow(vcf_SNPs))
@@ -99,7 +120,8 @@ for(i in 1:nrow(vcf_SNPs)) {
   )
 }
 
-save(vcf_SNPs, file = "results/mk_test/vcf_dataframe.Rdata")
+save(vcf_SNPs, file = "results/mk_test/vcf_dataframe_fla_umb.Rdata")
+load(file="results/mk_test/vcf_dataframe.Rdata")
 
 # make empty data.frame
 MKT<-data.frame(gene=factor(),pN=numeric(), pS=numeric(), dN=numeric(), dS=numeric())
@@ -125,11 +147,11 @@ for(i in 1:nrow(MKT)){
   if(sum(as.numeric(MKT[i,c(3,2,5,4)])) < 3) { MKT$fisher.test.P[i]<-NA } # only use cases where total number of SNPs is higher than or equal to 3
 }
 
-save(MKT, file = "results/mk_test/mkt.Rdata")
-load(file = "results/mk_test/mkt.Rdata")
+save(MKT, file = "results/mk_test/mkt_fla_spn_new.Rdata")
+load(file = "results/mk_test/mkt_fla_spn_new.Rdata")
 
 MKT_noNAs<-MKT[which(MKT$fisher.test.P != "NA"),] # remove all cases where fisher exact test is meaningless
 
 
 # multiple hypothesis testing. It seems to be uncommon with MKT; probably because fisher exact produces low P-values only with much higher counts than are common for SNP data
-MKT_noNAs$fisher.test.P<-p.adjust(MKT_noNAs$fisher.test.P, method = "BH") # correct p-values using Benjamini & Hochberg (1985) FDR
+MKT_noNAs$p.adj <-p.adjust(MKT_noNAs$fisher.test.P, method = "BH") # correct p-values using Benjamini & Hochberg (1985) FDR

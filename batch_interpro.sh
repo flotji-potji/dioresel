@@ -28,11 +28,15 @@ echo "Started at `date`"
 mkdir -p ${outDir}
 cd ${outDir}
 
-cmd=$(cat <<EOF
-interproscan.sh -i ${query} -b ${outFile} -cpu $SLURM_CPUS_PER_TASK -f TSV -goterms -pa -iprlookup -T ${TMPDIR} -t p
+if [ ! -e ${outFile}.tsv ]; then
+	cmd=$(cat <<EOF
+	interproscan.sh -i ${query} -b ${outFile} -cpu $SLURM_CPUS_PER_TASK -f TSV -goterms -pa -iprlookup -T ${TMPDIR} -t p
 EOF
-)
-echo $cmd
-/usr/bin/time -format="%E\tTIME\t%M\tMEM\t%P\tCPU\t$cmd" $cmd
+	)
+	echo $cmd
+	/usr/bin/time -format="%E\tTIME\t%M\tMEM\t%P\tCPU\t$cmd" $cmd
+else
+	echo "Skipping file already exists"
+fi
 
 echo "Ended at `date`"

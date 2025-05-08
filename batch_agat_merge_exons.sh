@@ -43,6 +43,5 @@ cd ${raw_out_dir}
 
 agat_sp_extract_sequences.pl --gff ${REF_ANNOT} \
 							--fasta ${tmp_fasta} \
-							--keep_attributes F \
 							-t exon --merge -o ${exon_fa}
 

@@ -11,8 +11,9 @@
 #SBATCH --mail-type=END
 
 # ENVIRONMENT 
-ml java
-ml htslib
+ml conda
+conda activate diosel
+
 SNPEFF_DIR=/lisc/scratch/botany/frschmidt/bin/snpEff
 SNPEFF=${SNPEFF_DIR}/snpEff.jar
 
@@ -29,15 +30,17 @@ db_dir=${WD}/data/snpEff_DB/
 
 # Calciphila and sp PicN'ga vcf-file
 data_dir=${WD}/data/variants
-vcf=${data_dir}/pair_cal_spn/vieref_cal_spn.vcf.gz
+vcf=${data_dir}/pair_fla_spn/vieref_fla_spn.vcf.gz
 
 # output directory and annotated vcf-file
-out_dir=${WD}/raw_data/annotation
-vcf_ann=${out_dir}/$(basename ${vcf%.vcf.gz}).ann.vcf.gz
+out_dir=${WD}/raw_data/snpeff_annotation/pair_fla_spn
+vcf_ann=${out_dir}/$(basename ${vcf%.vcf.gz}).conda.ann.vcf.gz
 
 # EXECUTION
 mkdir -p ${data_dir}
 mkdir -p ${out_dir}
+
+cd $out_dir
 
 # run snpeff on specified vcf file
 java -Xmx8g -jar ${SNPEFF} ${annot_version} -dataDir ${db_dir} ${vcf} | bgzip -c > ${vcf_ann}
