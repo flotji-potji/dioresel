@@ -1,0 +1,21 @@
+executor: slurm
+default-resources:
+  mem_mb: 2000
+  cpus_per_task: 1
+  runtime: 1h
+  partition: basic,short
+jobs: 20
+
+max-jobs-per-second: 20
+restart-times: 0
+printshellcmds: True
+jobname: 'smk_{rule}-{jobid}'  
+slurm-logdir: logs/smk/
+
+latency-wait: 60
+#default-storage-provider: fs
+use-conda: True
+
+set-resources:
+  - annotate_vcf:mem_mb=8000
+  - annotate_vcf:cpus_per_task=2
