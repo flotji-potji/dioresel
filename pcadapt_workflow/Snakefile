@@ -1,7 +1,7 @@
 rule all:
     input:
-        "raw_data/harvester/pair_cal_spn/snps_of_interest.tsv",
-        "raw_data/harvester/pair_cal_spn/snps_of_interest_padj.tsv"
+        "raw_data/harvester/pair_cal_spn/snps_of_interest.tsv"#,
+        #"raw_data/harvester/pair_cal_spn/snps_of_interest_padj.tsv"
 
 include: "rules/pcadapt_scan.smk"
 include: "rules/pcadapt_peak_finder.smk"

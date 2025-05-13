@@ -78,15 +78,16 @@ peaks_df_intersect <- peaks %>%
   inner_join(pcadapt.df, by = "chrom") %>%
   filter(position >= rangeLower & position <= rangeUpper)
 
-snps_of_interest <- peaks_df_intersect %>%
-  filter(pvalue < pval_threshold) %>%
-  filter(range.1 < quantile(peaks_df_intersect$range.1, 0.75)) %>%
-  filter(spacing < quantile(peaks_df_intersect$spacing, 0.75))
+snps_of_interest <- peaks_df_intersect #%>%
+  #filter(pvalue < pval_threshold) %>%
+  #filter(range.1 < quantile(peaks_df_intersect$range.1, 0.75)) %>%
+  #filter(spacing < quantile(peaks_df_intersect$spacing, 0.75))
 
 # plot manhattan plot of all scaffolds
 
 # Bonferroni corrected manhattan plot
 don <- manhattan_data_frame(pcadapt.df, snps_of_interest)
+don_subset <- subset(don, is_highlight == "yes")
 
 jpeg(
   output.peak_find,
@@ -95,11 +96,12 @@ jpeg(
   units = "in",
   res = 100
 )
-plot_manhattan(don, pval_type, 
+plot_manhattan(don, pval_type,
                paste("pcadapt -", plot_title, ": peak highlights")) +
   geom_hline(yintercept = -log10(0.05), linetype = "dotted") +
   geom_hline(yintercept = -log10(0.01)) +
-  geom_point(data=subset(don, is_highlight=="yes"), color="red", size=2) +
+  geom_point(data = don_subset,
+             y = don_subset[[pval_type]], color = "red", size = 2) +
   theme(text = element_text(size = 25),
         axis.text = element_text(color="black", size=25),
         axis.title = element_text(color = "black", size=25, face = "bold"))

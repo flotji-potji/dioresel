@@ -14,7 +14,7 @@ rule manhattan_harvester_find_peaks:
         ./harvester -chrcolumn 1 -lcolumn 2 -pcolumn {params.pval_column} \
                     -header yes -file {input} \
                     -out {output} -delim tab -missing NA \
-                    -inlimit 0.001 -peak-limit 5 -dots 5 -shrink 2
+                    -inlimit 0.001 -peak-limit 5 -dots 5 -shrink 2 || true
         rm harvester
         """
 
@@ -34,7 +34,7 @@ rule manhattan_harvester_find_peaks_padj:
         ./harvester -chrcolumn 1 -lcolumn 2 -pcolumn {params.pval_column} \
                     -header yes -file {input} \
                     -out {output} -delim tab -missing NA \
-                    -inlimit 0.001 -peak-limit 5 -dots 5 -shrink 2
+                    -inlimit 0.001 -peak-limit 5 -dots 5 -shrink 2 || true
         rm harvester
         """
 
