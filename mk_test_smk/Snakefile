@@ -1,5 +1,7 @@
 rule all:
     input:
-        ""
+        "raw_data/mk_test/pair_fla_spn/mkt_table.tsv"
 
-include: "rules/coding_sequence_discovery.smk"
+include: "rules/vcf_annotation.smk" 
+include: "rules/vcf_pop_freq_subset.smk"
+include: "rules/mk_test_stat.smk"
