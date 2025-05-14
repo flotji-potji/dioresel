@@ -1,0 +1,13 @@
+PAIRS = [("fla", "umb"), ("fla", "spn"), ("cal", "spn")]
+
+rule all:
+    input:
+        "results/pi_plots/pair_fla_spn/sp_spn.jpg",
+        "results/pi_plots/pair_fla_spn/sp_spn.filtered.jpg",
+        "results/tajimad_plots/pair_fla_spn/sp_spn.jpg",
+        "results/tajimad_plots/pair_fla_spn/sp_spn.filtered.jpg",
+        "results/pi_plots/pair_fla_spn/pair_fla_spn.jpg",
+        "results/tajimad_plots/pair_fla_spn/pair_fla_spn.jpg"
+
+include: "rules/ind_stats.smk"
+include: "rules/pair_stats.smk"
