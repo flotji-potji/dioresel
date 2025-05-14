@@ -1,0 +1,22 @@
+executor: slurm
+default-resources:
+  mem_mb: 3000
+  cpus_per_task: 1
+  runtime: 1h
+  partition: basic,short
+jobs: 20
+
+max-jobs-per-second: 20
+restart-times: 0
+printshellcmds: True
+jobname: 'smk_{rule}-{jobid}'  
+slurm-logdir: logs/smk/
+
+latency-wait: 60
+use-conda: True
+
+set-resources:
+  - annotate_vcf:mem_mb=8000
+  - annotate_vcf:cpus_per_task=2
+  - pcadapt_scan_and_plot:mem_mb=4000
+  - pcadapt_ldthin_scan_and_plot:mem_mb=4000

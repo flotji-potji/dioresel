@@ -1,0 +1,10 @@
+.snakemake
+.coverage
+.vscode
+*.gz
+*.out
+*.pos
+logs
+data
+raw_data
+results
