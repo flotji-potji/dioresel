@@ -4,6 +4,8 @@
 *.gz
 *.out
 *.pos
+*.pdf
+*.svg
 logs
 data
 raw_data

@@ -16,7 +16,7 @@ latency-wait: 60
 use-conda: True
 
 set-resources:
-  - annotate_vcf:mem_mb=8000
-  - annotate_vcf:cpus_per_task=2
+  - snpeff_annotate_vcf:mem_mb=8000
+  - snpeff_annotate_vcf:cpus_per_task=2
   - pcadapt_scan_and_plot:mem_mb=4000
   - pcadapt_ldthin_scan_and_plot:mem_mb=4000
