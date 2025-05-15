@@ -1,0 +1,31 @@
+samples = [("cal", "spn"), ("cal", "eru"), ("cal", "ruf"), ("cal", "umb"), ("cal", "vie")]
+
+rule all:
+    input:
+        # FST
+        expand("results/fst_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.10000.fst.jpg", p=samples),
+        # MKT
+        expand("raw_data/mk_test/pair_{p[0]}_{p[1]}/mkt_table.tsv", p=samples),
+        # Tajima's D and PI
+        expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
+        expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
+        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
+        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
+        expand("results/pi_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
+        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
+        # pcadapt
+        expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples)
+
+# FST
+include: "rules/vcf_preprocessing.smk"
+include: "rules/fst_step_window.smk"
+# MKT
+include: "rules/vcf_annotation.smk" 
+include: "rules/vcf_pop_freq_subset.smk"
+include: "rules/mk_test_stat.smk"
+# Tajima'D and PI
+include: "rules/ind_stats.smk"
+include: "rules/pair_stats.smk"
+# pcadapt
+include: "rules/pcadapt_scan.smk"
+include: "rules/pcadapt_peak_finder.smk"
