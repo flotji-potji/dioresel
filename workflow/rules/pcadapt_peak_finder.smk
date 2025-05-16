@@ -9,12 +9,12 @@ rule manhattan_harvester_find_peaks:
         pval_column=5
     shell:
         r"""
-        cp {params.harvester_prog} ./
+        test -e harvester || cp {params.harvester_prog} ./
         mkdir -p {params.out_dir}
         ./harvester -chrcolumn 1 -lcolumn 2 -pcolumn {params.pval_column} \
                     -header yes -file {input} \
                     -out {output} -delim tab -missing NA \
-                    -inlimit 0.001 -peak-limit 5 -dots 5 -shrink 2 || true
+                    -inlimit 0.001 -peak-limit 9 -dots 5 -shrink 2 || true
         test -e harvester && rm harvester
         """
 

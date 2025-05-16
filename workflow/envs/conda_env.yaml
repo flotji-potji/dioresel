@@ -16,4 +16,4 @@ dependencies:
   - bedtools=2.31.1 
   - transdecoder=5.7.1
   - snpeff=5.2
-  - qt=5
+  - qt=4
