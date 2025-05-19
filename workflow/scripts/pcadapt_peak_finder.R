@@ -78,8 +78,8 @@ peaks_df_intersect <- peaks %>%
   inner_join(pcadapt.df, by = "chrom") %>%
   filter(position >= rangeLower & position <= rangeUpper)
 
-snps_of_interest <- peaks_df_intersect #%>%
-  #filter(pvalue < pval_threshold) %>%
+snps_of_interest <- peaks_df_intersect %>%
+  filter(pvalue < pval_threshold) %>%
   #filter(range.1 < quantile(peaks_df_intersect$range.1, 0.75)) %>%
   #filter(spacing < quantile(peaks_df_intersect$spacing, 0.75))
 
