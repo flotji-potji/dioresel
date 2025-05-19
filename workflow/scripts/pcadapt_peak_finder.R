@@ -101,7 +101,7 @@ plot_manhattan(don, pval_type,
   geom_hline(yintercept = -log10(0.05), linetype = "dotted") +
   geom_hline(yintercept = -log10(0.01)) +
   geom_point(data = don_subset,
-             y = don_subset[[pval_type]], color = "red", size = 2) +
+             y = -log10(don_subset[[pval_type]]), color = "red", size = 2) +
   theme(text = element_text(size = 25),
         axis.text = element_text(color="black", size=25),
         axis.title = element_text(color = "black", size=25, face = "bold"))
