@@ -15,6 +15,14 @@ rule vcftools_pi_stat:
 		--out {params.output_format}
         """
 
+use rule vcftools_to_bed as pi_to_bed with:
+    input:
+        rules.vcftools_pi_stat.output.pi
+    output:
+        "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.windowed.pi.bed"
+    params:
+        header = "PI"
+
 rule vcftools_pi_stat_filtered:
     input:
         vcf = "data/variants/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.vcf.gz",
@@ -37,9 +45,18 @@ rule vcftools_pi_stat_filtered:
 		--out {params.output_format}
         """
 
+use rule vcftools_to_bed as pi_filtered_to_bed with:
+    input:
+        rules.vcftools_pi_stat_filtered.output.pi
+    output:
+        "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered.windowed.pi.bed"
+    params:
+        header = "PI"
+
 rule r_plot_pi:
     input:
-        rules.vcftools_pi_stat.output.pi
+        rules.vcftools_pi_stat.output.pi,
+        rules.pi_to_bed.output
     output:
         "results/pi_plots/pair_{sp1}_{sp2}/sp_{sp2}.jpg"
     params:  
@@ -51,7 +68,8 @@ rule r_plot_pi:
 
 rule r_plot_pi_filtered:
     input:
-        rules.vcftools_pi_stat_filtered.output.pi
+        rules.vcftools_pi_stat_filtered.output.pi,
+        rules.pi_filtered_to_bed.output
     output:
         "results/pi_plots/pair_{sp1}_{sp2}/sp_{sp2}.filtered.jpg"
     params:  
@@ -66,7 +84,7 @@ rule vcftools_tajima_stat:
         vcf = "data/variants/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.vcf.gz",
         sample = "data/variants/pair_{sp1}_{sp2}/{sp2}.samples"
     output:
-        tajimad = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.Tajima.D",
+        tajimad = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.Tajima.D"
     params:
         output_format = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}",
         window_size = 10000
@@ -78,12 +96,20 @@ rule vcftools_tajima_stat:
 		--out {params.output_format}
         """
 
+use rule vcftools_to_bed as tajimad_to_bed with:
+    input:
+        rules.vcftools_tajima_stat.tajimad
+    output:
+        "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.Tajima.D.bed"
+    params:
+        header = "TajimaD"
+
 rule vcftools_tajima_stat_filtered:
     input:
         vcf = "data/variants/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.vcf.gz",
         sample = "data/variants/pair_{sp1}_{sp2}/{sp2}.samples"
     output:
-        tajimad = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered.Tajima.D",
+        tajimad = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered.Tajima.D"
     params:
         output_format = "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered",
         window_size = 10000
@@ -100,9 +126,18 @@ rule vcftools_tajima_stat_filtered:
 		--out {params.output_format}
         """
 
+use rule vcftools_to_bed as tajimad_filtered_to_bed with:
+    input:
+        rules.vcftools_tajima_stat.filtered.tajimad
+    output:
+        "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered.Tajima.D.bed"
+    params:
+        header = "TajimaD"
+
 rule r_plot_tajimad:
     input:
-        rules.vcftools_tajima_stat.output.tajimad
+        rules.vcftools_tajima_stat.output.tajimad,
+        rules.tajimad_to_bed.output
     output:
         "results/tajimad_plots/pair_{sp1}_{sp2}/sp_{sp2}.jpg"
     params:  
@@ -114,7 +149,8 @@ rule r_plot_tajimad:
 
 rule r_plot_tajimad_filtered:
     input:
-        rules.vcftools_tajima_stat_filtered.output.tajimad
+        rules.vcftools_tajima_stat_filtered.output.tajimad,
+        rules.tajimad_filtered_to_bed.output
     output:
         "results/tajimad_plots/pair_{sp1}_{sp2}/sp_{sp2}.filtered.jpg"
     params:  

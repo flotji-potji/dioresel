@@ -13,9 +13,18 @@ rule vcftools_pi_pair_stat:
 		--out {params.output_format}
         """
 
-rule r_plot_pair_pi:
+use rule vcftools_to_bed as pair_pi_to_bed with:
     input:
         rules.vcftools_pi_pair_stat.output.pi
+    output:
+        "raw_data/pair_stat/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.windowed.pi.bed"
+    params:
+        header = "PI"
+
+rule r_plot_pair_pi:
+    input:
+        rules.vcftools_pi_pair_stat.output.pi,
+        rules.pair_pi_to_bed.output
     output:
         "results/pi_plots/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.jpg"
     params:  
@@ -40,9 +49,18 @@ rule vcftools_tajima_pair_stat:
 		--out {params.output_format}
         """
 
-rule r_plot_pair_tajimad:
+use rule vcftools_to_bed as pair_tajimad_to_bed with:
     input:
         rules.vcftools_tajima_pair_stat.output.tajimad
+    output:
+        "raw_data/pair_stat/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.Tajima.D.bed"
+    params:
+        header = "TajimaD"
+
+rule r_plot_pair_tajimad:
+    input:
+        rules.vcftools_tajima_pair_stat.output.tajimad,
+        rules.pair_tajimad_to_bed.output
     output:
         "results/tajimad_plots/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.jpg"
     params:  
