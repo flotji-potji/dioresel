@@ -55,8 +55,7 @@ use rule vcftools_to_bed as pi_filtered_to_bed with:
 
 rule r_plot_pi:
     input:
-        rules.vcftools_pi_stat.output.pi,
-        rules.pi_to_bed.output
+        rules.vcftools_pi_stat.output.pi
     output:
         "results/pi_plots/pair_{sp1}_{sp2}/sp_{sp2}.jpg"
     params:  
@@ -68,8 +67,7 @@ rule r_plot_pi:
 
 rule r_plot_pi_filtered:
     input:
-        rules.vcftools_pi_stat_filtered.output.pi,
-        rules.pi_filtered_to_bed.output
+        rules.vcftools_pi_stat_filtered.output.pi
     output:
         "results/pi_plots/pair_{sp1}_{sp2}/sp_{sp2}.filtered.jpg"
     params:  
@@ -98,11 +96,12 @@ rule vcftools_tajima_stat:
 
 use rule vcftools_to_bed as tajimad_to_bed with:
     input:
-        rules.vcftools_tajima_stat.tajimad
+        rules.vcftools_tajima_stat.output
     output:
         "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.Tajima.D.bed"
     params:
-        header = "TajimaD"
+        header = "TajimaD",
+        add_one = 1
 
 rule vcftools_tajima_stat_filtered:
     input:
@@ -128,16 +127,16 @@ rule vcftools_tajima_stat_filtered:
 
 use rule vcftools_to_bed as tajimad_filtered_to_bed with:
     input:
-        rules.vcftools_tajima_stat.filtered.tajimad
+        rules.vcftools_tajima_stat_filtered.output
     output:
         "raw_data/ind_stat/pair_{sp1}_{sp2}/sp_{sp2}.filtered.Tajima.D.bed"
     params:
-        header = "TajimaD"
+        header = "TajimaD",
+        add_one = 1
 
 rule r_plot_tajimad:
     input:
-        rules.vcftools_tajima_stat.output.tajimad,
-        rules.tajimad_to_bed.output
+        rules.vcftools_tajima_stat.output.tajimad
     output:
         "results/tajimad_plots/pair_{sp1}_{sp2}/sp_{sp2}.jpg"
     params:  
@@ -149,8 +148,7 @@ rule r_plot_tajimad:
 
 rule r_plot_tajimad_filtered:
     input:
-        rules.vcftools_tajima_stat_filtered.output.tajimad,
-        rules.tajimad_filtered_to_bed.output
+        rules.vcftools_tajima_stat_filtered.output.tajimad
     output:
         "results/tajimad_plots/pair_{sp1}_{sp2}/sp_{sp2}.filtered.jpg"
     params:  

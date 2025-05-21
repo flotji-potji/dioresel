@@ -27,23 +27,27 @@ rule vcftools_to_bed:
     output:
         "raw_data/fst_step_window/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.bed"
     params:
-        header = "WEIGHTED_FST"
+        header = "WEIGHTED_FST",
+        window_size = 10000,
+        add_one = 0
     shell:
         r"""
-        awk 'BEGIN{col = 0; OFS = "\t"} NR==1{
-                                    for (i=1;i<=NF;i++) { 
-                                        if ($i == "{params.header}") {
+        awk 'BEGIN{{col = 0; nv_col = 0; OFS = "\t"}} NR==1{{
+                                    for (i=1;i<=NF;i++) {{
+                                        if ($i == "{params.header}") {{
                                             col = i
-                                        }
-                                    }
-                                } NR>1{print $1, $2, $3, "$col|$4"}}' \
+                                        }}
+                                        if ($i == "N_VARIANTS") {{
+                                            nv_col = i
+                                        }}
+                                    }}
+                                }} NR>1{{print $1, $2+{params.add_one}, $2+{params.window_size}+{params.add_one}, $col, $nv_col}}' \
             {input} > {output}
         """
 
 rule r_plot_fst:
     input:
-        rules.vcftools_step_window.output,
-        rules.vcftools_to_bed.output
+        rules.vcftools_step_window.output
     output:
         "results/fst_plots/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.{size}.fst.jpg"
     params:
