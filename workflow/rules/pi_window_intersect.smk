@@ -45,10 +45,10 @@ rule pi_top_windows:
 
 rule pi_window_intersect:
     input:
-        pi = rules.pi_top_windows,
-        tajimad = rules.filter_tajimad,
-        pcadapt = rules.filter_pcadapt,
-        fst = rules.filter_fst
+        pi = rules.pi_top_windows.output,
+        tajimad = rules.filter_tajimad.output,
+        pcadapt = rules.filter_pcadapt.output,
+        fst = rules.filter_fst.output
     output:
         "raw_data/pi_intersect/pair_{sp1}_{sp2}/pi.tajimad.pcadapt.fst.bed"
     shell:

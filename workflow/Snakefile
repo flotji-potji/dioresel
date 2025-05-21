@@ -3,7 +3,7 @@ samples = [("cal", "spn"), ("cal", "eru"), ("cal", "ruf"), ("cal", "umb"), ("cal
 rule all:
     input:
         # FST
-        expand("results/fst_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.10000.fst.jpg", p=samples),
+        expand("results/fst_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.fst.jpg", p=samples),
         # MKT
         expand("raw_data/mk_test/pair_{p[0]}_{p[1]}/mkt_table.tsv", p=samples),
         # Tajima's D and PI
@@ -14,7 +14,9 @@ rule all:
         expand("results/pi_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
         expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
         # pcadapt
-        expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples)
+        expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples),
+        # pi windows
+        expand("raw_data/pi_intersect/pair_{p[0]}_{p[1]}/pi.tajimad.pcadapt.fst.bed", p=samples)
 
 # FST
 include: "rules/vcf_preprocessing.smk"
@@ -29,3 +31,5 @@ include: "rules/pair_stats.smk"
 # pcadapt
 include: "rules/pcadapt_scan.smk"
 include: "rules/pcadapt_peak_finder.smk"
+# pi windows
+include: "rules/pi_window_intersect.smk"

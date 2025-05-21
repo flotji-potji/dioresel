@@ -6,12 +6,10 @@ rule vcftools_step_window:
         sp1_sample="data/variants/pair_{sp1}_{sp2}/{sp1}.samples",
         sp2_sample="data/variants/pair_{sp1}_{sp2}/{sp2}.samples"
     output:
-        "raw_data/fst_step_window/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.{size}.step.windowed.weir.fst"
+        "raw_data/fst_step_window/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.windowed.weir.fst"
     params:
-        output_format="raw_data/fst_step_window/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}.{size}.step",
-        window_size="{size}",
-    envmodules:
-        "vcftools"
+        output_format="raw_data/fst_step_window/pair_{sp1}_{sp2}/vieref_{sp1}_{sp2}",
+        window_size=10000
     shell:
         r"""
         vcftools --gzvcf {input.vcf} \
@@ -49,11 +47,9 @@ rule r_plot_fst:
     input:
         rules.vcftools_step_window.output
     output:
-        "results/fst_plots/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.{size}.fst.jpg"
+        "results/fst_plots/pair_{sp1}_{sp2}/pair_{sp1}_{sp2}.fst.jpg"
     params:
         plot_title="Fst - {sp1} vs. {sp2}",
-        window_info="window size: {size}bp"
-    envmodules:
-        "R"
+        window_info="window size: 10000bp"
     script:
         "../scripts/plot_fst.R"

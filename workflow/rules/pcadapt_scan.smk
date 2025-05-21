@@ -48,7 +48,7 @@ rule pcadapt_to_bed:
         "raw_data/pcadapt/pair_{sp1}_{sp2}/single/pcadapt_snp_results.bed"
     shell:
         r"""
-        awk 'BEGIN{{OFS="\t"}} NR>1{print $1, $2, $2+1, $5, $6}' {input} > {output}
+        awk 'BEGIN{{OFS="\t"}} NR>1{{print $1, $2, $2+1, $5, $6}}' {input} > {output}
         """
 
 rule pcadapt_make_windows:
@@ -73,7 +73,7 @@ rule pcadapt_make_windows:
         bedtools groupby -g 1,2,3 -c 7,8,9 \
                          -o mean,mean,sum -i $TMPDIR/tmp.bed > $TMPDIR/group.bed 
         
-        awk 'BEGIN{OFS="\t"} {print $1, $2+1, $3, $4, $5, $6}' $TMPDIR/group.bed > {output}
+        awk 'BEGIN{{OFS="\t"}} {{print $1, $2+1, $3, $4, $5, $6}}' $TMPDIR/group.bed > {output}
 
         rm $TMPDIR/*
         """
