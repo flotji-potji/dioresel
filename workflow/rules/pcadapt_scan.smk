@@ -65,17 +65,17 @@ rule pcadapt_make_windows:
         bedtools split -i {input.pcadapt} -n $n_chunks \
                        -p $TMPDIR/pcadapt_chunk -a simple
 
-        for (file in $TMPDIR/pcadapt_chunk*); do
+        for file in $TMPDIR/pcadapt_chunk*; do
             bedtools intersect -a {input.windows} \
                                -b $file -wo > $TMPDIR/tmp.bed
         done
 
         bedtools groupby -g 1,2,3 -c 7,8,9 \
-                         -o mean,mean,sum -i $TMPDIR/tmp.bed > $TMPDIR/group.bed 
+                         -o median,median,sum -i $TMPDIR/tmp.bed > $TMPDIR/group.bed 
         
         awk 'BEGIN{{OFS="\t"}} {{print $1, $2+1, $3, $4, $5, $6}}' $TMPDIR/group.bed > {output}
 
-        rm $TMPDIR/*
+        find $TMPDIR -maxdepth 1 -type f -delete
         """
 
 rule pcadapt_ldthin_scan_and_plot:

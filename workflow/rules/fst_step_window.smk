@@ -35,7 +35,7 @@ rule vcftools_to_bed:
                                         if ($i == "{params.header}") {{
                                             col = i
                                         }}
-                                        if ($i == "N_VARIANTS") {{
+                                        if ($i == "N_VARIANTS" || $i == "N_SNPS") {{
                                             nv_col = i
                                         }}
                                     }}
