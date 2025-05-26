@@ -15,11 +15,14 @@ rule all:
         expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
         # pcadapt
         #expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples),
-        # pi windows
+        # pi species windows
         "results/pi_within_intersect/pi_summary.jpg",
         "results/pi_within_intersect/pi_bottom_summary.jpg",
         "results/pi_between_intersect/pi_summary.jpg",
-        "results/pi_between_intersect/pi_bottom_summary.jpg"
+        "results/pi_between_intersect/pi_bottom_summary.jpg",
+        # pi shared-tree windows
+        "results/pi_within_intersect_tree/pi_summary.jpg",
+        "results/pi_between_intersect_tree/pi_summary.jpg"
 
 # FST
 include: "rules/vcf_preprocessing.smk"
@@ -35,4 +38,6 @@ include: "rules/pair_stats.smk"
 include: "rules/pcadapt_scan.smk"
 include: "rules/pcadapt_peak_finder.smk"
 # pi windows
+include: "rules/bed_filter_and_outlier.smk"
 include: "rules/species_pi_window_intersect.smk"
+include: "rules/tree_pi_window_intersect.smk"
