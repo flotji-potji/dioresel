@@ -102,92 +102,44 @@ rule outliers_pcadapt:
         awk '$4 < {params.prob} {{print}}' {input} > {output}
         """
 
-rule sort_pi:
+rule outliers_sel_mk_test:
     input:
-        rules.filter_pi.output
+        rules.mk_test_to_window_bed.output
     output:
-        "raw_data/pi_within_intersect/pair_{sp1}_{sp2}/pi.sorted.bed"
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/mk_test.outliers.bed"
     params:
-        order = "-r"
-    shell:
-        """
-        sort -g -k4,4 {params.order} {input} > {output}
-        """
-
-use rule sort_pi as sort_pair_pi with:
-    input:
-        rules.filter_pair_pi.output
-    output:
-        "raw_data/pi_between_intersect/pair_{sp1}_{sp2}/pi_pair.sorted.bed"
-
-rule top_bottom_pi_windows:
-    input:
-        rules.sort_pi.output
-    output:
-        "raw_data/pi_within_intersect/pair_{sp1}_{sp2}/pi.top_windows.bed"
-    params:
-        num_windows = 5000,
+        prob = 0.05
     shell:
         r"""
-        head -n {params.num_windows} {input} >> {output}
-        tail -n {params.num_windows} {input} >> {output}
-        """
-
-use rule top_bottom_pi_windows as top_bottom_pair_pi_windows with:
-    input:
-        rules.sort_pair_pi.output
-    output:
-        "raw_data/pi_between_intersect/pair_{sp1}_{sp2}/pi_pair.top_windows.bed"
-
-rule top_bottom_pi_within_between_windows:
-    input:
-        within = rules.sort_pi.output,
-        between = rules.sort_pair_pi.output
-    output:
-        "raw_data/pi_between_within_intersect/pair_{sp1}_{sp2}/pi_sp_pair.top_windows.bed"
-    params:
-        num_windows = 2500
-    shell:
-        """
-        head -n {params.num_windows} {input.within} >> {output}
-        head -n {params.num_windows} {input.between} >> {output}
-        tail -n {params.num_windows} {input.within} >> {output}
-        tail -n {params.num_windows} {input.between} >> {output}
+        awk '($6 < {params.prob} && $5 > $4) {{print}}' {input} > {output}
         """
 
 rule pi_window_intersect:
     input:
-        pi = rules.top_bottom_pi_windows.output,
+        pi = rules.outliers_pi.output,
         tajimad = rules.outliers_sel_tajimad.output,
         pcadapt = rules.outliers_pcadapt.output,
-        fst = rules.outliers_fst.output
+        fst = rules.outliers_fst.output,
+        mkt = rules.outliers_sel_mk_test.output
     output:
-        "raw_data/pi_within_intersect/pair_{sp1}_{sp2}/pi.tajimad.pcadapt.fst.bed"
+        "raw_data/pi_within_intersect/pair_{sp1}_{sp2}/pi.tajimad.pcadapt.fst.mkt.bed"
     shell:
         r"""
         bedtools intersect -a {input.pi} \
-                           -b {input.tajimad} {input.pcadapt} {input.fst} \
-                           -names tajimad pcadapt fst \
+                           -b {input.tajimad} {input.pcadapt} {input.fst} {input.mkt} \
+                           -names tajimad pcadapt fst mkt \
                            -wo > {output}
         """
 
 use rule pi_window_intersect as pair_pi_window_intersect with:
     input:
-        pi = rules.top_bottom_pair_pi_windows.output,
+        pi = rules.outliers_pair_pi.output,
         tajimad = rules.outliers_sel_pair_tajimad.output,
         pcadapt = rules.outliers_pcadapt.output,
-        fst = rules.outliers_fst.output
+        fst = rules.outliers_fst.output,
+        mkt = rules.outliers_sel_mk_test.output
     output:
-        "raw_data/pi_between_intersect/pair_{sp1}_{sp2}/pi_pair.tajimad_pair.pcadapt.fst.bed"
-
-use rule pi_window_intersect as pi_within_between_window_intersect with:
-    input:
-        pi = rules.top_bottom_pi_within_between_windows.output,
-        tajimad = rules.outliers_sel_pair_tajimad.output,
-        pcadapt = rules.outliers_pcadapt.output,
-        fst = rules.outliers_fst.output
-    output:
-        "raw_data/pi_between_within_intersect/pair_{sp1}_{sp2}/pi_pair.tajimad_pair.pcadapt.fst.bed"
+        "raw_data/pi_between_intersect/pair_{sp1}_{sp2}/pi_pair.tajimad_pair.pcadapt.fst.mkt.bed"
 
 rule pi_window_count:
     input:
@@ -209,12 +161,6 @@ use rule pi_window_count as pair_pi_window_count with:
     output:
         "raw_data/pi_between_intersect/pair_{sp1}_{sp2}/pi_summary.tsv"
 
-use rule pi_window_count as pi_within_between_window_count with:
-    input:
-        rules.pi_within_between_window_intersect.output
-    output:
-        "raw_data/pi_between_within_intersect/pair_{sp1}_{sp2}/pi_summary.tsv"
-
 rule all_pi_counts:
     input:
         expand("raw_data/pi_within_intersect/pair_{p[0]}_{p[1]}/pi_summary.tsv", p=samples) 
@@ -230,12 +176,6 @@ use rule all_pi_counts as all_pair_pi_counts with:
         expand("raw_data/pi_between_intersect/pair_{p[0]}_{p[1]}/pi_summary.tsv", p=samples) 
     output:
         "results/pi_between_intersect/pi_summary.tsv"
-
-use rule all_pi_counts as all_pi_within_between_counts with:
-    input:
-        expand("raw_data/pi_between_within_intersect/pair_{p[0]}_{p[1]}/pi_summary.tsv", p=samples) 
-    output:
-        "results/pi_between_within_intersect/pi_summary.tsv"
 
 rule plot_pi_intersect:
     input:
@@ -254,11 +194,3 @@ use rule plot_pi_intersect as plot_pair_pi_intersect with:
         "results/pi_between_intersect/pi_summary.jpg"
     params:
         plot_title = "PI - between"
-
-use rule plot_pi_intersect as plot_pi_within_between_intersect with:
-    input:
-        rules.all_pi_within_between_counts.output
-    output:
-        "results/pi_between_within_intersect/pi_summary.jpg"
-    params:
-        plot_title = "PI - within and between"

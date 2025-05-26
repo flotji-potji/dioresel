@@ -17,8 +17,7 @@ rule all:
         #expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples),
         # pi windows
         "results/pi_within_intersect/pi_summary.jpg",
-        "results/pi_between_intersect/pi_summary.jpg",
-        "results/pi_between_within_intersect/pi_summary.jpg"
+        "results/pi_between_intersect/pi_summary.jpg"
 
 # FST
 include: "rules/vcf_preprocessing.smk"
