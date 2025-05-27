@@ -111,10 +111,10 @@ rule outliers_pcadapt:
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pcadapt.outliers.bed"
     params:
-        prob = 0.05
+        prob = 0.05 
     shell:
         r"""
-        awk '$4 < {params.prob} {{print}}' {input} > {output}
+        awk '$4 > -log({params.prob})/log(10) {{print}}' {input} > {output}
         """
 
 rule outliers_sel_mk_test:

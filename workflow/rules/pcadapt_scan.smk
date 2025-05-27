@@ -70,8 +70,11 @@ rule pcadapt_make_windows:
                                -b $file -wo > $TMPDIR/tmp.bed
         done
 
+        # convert p-value into -log10(pvalue)
+        awk -F'\t' -v OFS="\t" '$7 != "NA" {{$7 = -log($7)/log(10); print}}' $TMPDIR/tmp.bed > $TMPDIR/tmp.conv.bed
+
         bedtools groupby -g 1,2,3 -c 7,8,9 \
-                         -o median,median,sum -i $TMPDIR/tmp.bed > $TMPDIR/group.bed 
+                         -o mean,mean,sum -i $TMPDIR/tmp.conv.bed > $TMPDIR/group.bed 
         
         awk 'BEGIN{{OFS="\t"}} {{print $1, $2+1, $3, $4, $5, $6}}' $TMPDIR/group.bed > {output}
 
