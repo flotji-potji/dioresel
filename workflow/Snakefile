@@ -22,7 +22,11 @@ rule all:
         "results/pi_between_intersect/pi_bottom_summary.jpg",
         # pi shared-tree windows
         "results/pi_within_intersect_tree/pi_summary.jpg",
-        "results/pi_between_intersect_tree/pi_summary.jpg"
+        "results/pi_between_intersect_tree/pi_summary.jpg",
+        # PicMin
+        "raw_data/picmin/picmin_pcadapt_results.pval.jpeg",
+        "raw_data/picmin/picmin_pcadapt_results.padj.jpeg"
+
 
 # FST
 include: "rules/vcf_preprocessing.smk"
@@ -41,3 +45,5 @@ include: "rules/pcadapt_peak_finder.smk"
 include: "rules/bed_filter_and_outlier.smk"
 include: "rules/species_pi_window_intersect.smk"
 include: "rules/tree_pi_window_intersect.smk"
+# PicMin
+include: "rules/picmin_analysis.smk"

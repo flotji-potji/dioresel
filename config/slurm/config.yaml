@@ -1,4 +1,12 @@
 executor: slurm
+set-resources:
+  - snpeff_annotate_vcf:mem_mb=8000
+  - snpeff_annotate_vcf:cpus_per_task=2
+  - pcadapt_scan_and_plot:mem_mb=4000
+  - pcadapt_ldthin_scan_and_plot:mem_mb=4000
+  - picmin_analysis_pcadapt:mem="16G"
+  - picmin_analysis_pcadapt:cpus_per_task=2
+  - picmin_analysis_pcadapt:runtime=5h
 default-resources:
   mem_mb: 3000
   cpus_per_task: 1
@@ -14,9 +22,3 @@ slurm-logdir: logs/smk/
 
 latency-wait: 60
 use-conda: True
-
-set-resources:
-  - snpeff_annotate_vcf:mem_mb=8000
-  - snpeff_annotate_vcf:cpus_per_task=2
-  - pcadapt_scan_and_plot:mem_mb=4000
-  - pcadapt_ldthin_scan_and_plot:mem_mb=4000
