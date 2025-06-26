@@ -35,12 +35,12 @@ rule mk_test_to_gff:
             <(awk '$3~"gene"' {input.gff} | sort -k9) \
             > $TMPDIR/tmp.gff
 
-        paste $TMPDIR/tmp.gff <(tail -n +2 {input.mk_test} | sort -k1) \
+        paste <(sort -k9 -V $TMPDIR/tmp.gff) \
+            <(tail -n +2 {input.mk_test} | sort -k1 -V) \
             > {output}
 
         find $TMPDIR -maxdepth 1 -type f -delete
         """
-
 
 rule mk_test_to_window_bed:
     input:
