@@ -170,7 +170,7 @@ if (snakemake@params$ld_thin == "yes") {
 
 # add p and padj values to SNP-position dataframe
 pcadapt.df$pvalue <- pcadapt.scan$pvalues
-pcadapt.df$padj <- p.adjust(pcadapt.scan$pvalues, method = "bonferroni")
+pcadapt.df$padj <- p.adjust(pcadapt.scan$pvalues, method = "fdr")
 
 # plot pcadapt results as manhattan plots
 don <- manhattan_data_frame(pcadapt.df)

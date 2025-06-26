@@ -23,9 +23,6 @@ rule pcadapt_scan_and_plot:
         plot_title="{sp1} - {sp2}",
         ld_thin="no",
         vie_genome_size=1523932088
-    resources:
-        mem_mb=4000,
-        cpus_per_task=2
     script:
         "../scripts/pcadapt_scan_and_plot.R"
 
@@ -38,7 +35,8 @@ rule bedtools_make_windows:
         window_size = 10000
     shell:
         """
-        bedtools makewindows -g {input} -w {params.window_size} > {output}
+        bedtools makewindows -g {input} -w {params.window_size} > $TMPDIR/tmp.bed
+        awk -v OFS='\t' '{{$2=$2+1; $3=$3+1; print}}' $TMPDIR/tmp.bed > {output}
         """
 
 rule pcadapt_to_bed:
@@ -71,12 +69,14 @@ rule pcadapt_make_windows:
         done
 
         # convert p-value into -log10(pvalue)
-        awk -F'\t' -v OFS="\t" '$7 != "NA" {{$7 = -log($7)/log(10); print}}' $TMPDIR/tmp.bed > $TMPDIR/tmp.conv.bed
+        awk -F'\t' -v OFS="\t" '$7 != "NA" {{$7 = -log($7)/log(10); 
+                                             $8 = -log($8)/log(10); print}}' \
+            $TMPDIR/tmp.bed > $TMPDIR/tmp.conv.bed
 
         bedtools groupby -g 1,2,3 -c 7,8,9 \
                          -o mean,mean,sum -i $TMPDIR/tmp.conv.bed > $TMPDIR/group.bed 
         
-        awk 'BEGIN{{OFS="\t"}} {{print $1, $2+1, $3, $4, $5, $6}}' $TMPDIR/group.bed > {output}
+        awk 'BEGIN{{OFS="\t"}} {{print $1, $2, $3, $4, $5, $6}}' $TMPDIR/group.bed > {output}
 
         find $TMPDIR -maxdepth 1 -type f -delete
         """
