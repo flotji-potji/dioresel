@@ -1,0 +1,7 @@
+name: pixy
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pixy=2.0.0
+  - htslib
