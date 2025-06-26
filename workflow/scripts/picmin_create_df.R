@@ -7,10 +7,9 @@ if (!require(PicMin)) {
   install.packages("poolr", repos = "https://cloud.r-project.org")
   library(PicMin)
   library(poolr)
-} else {
-  library(PicMin)
-  library(poolr)
 }
+library(PicMin)
+library(poolr)
 options(error = quote({
   dump.frames(to.file=T, dumpto='last.dump')
   load('last.dump.rda')
