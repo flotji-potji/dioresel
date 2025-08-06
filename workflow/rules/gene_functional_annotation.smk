@@ -1,15 +1,41 @@
 rule subset_interpro:
+    # rule subsets interpro results into 5 columns
+    # it concatonates the GO terms
+    # it sorts the accession description by length and takes longest name
     input:
         "data/interpro/transdecoder_pep_go_pathways.tsv"
     output:
         "raw_data/gene_annotation/interpro.tsv"
     shell:
         r"""
-        cut -f 1,13,14 {input} \
+        awk -F'\t' -v OFS='\t' '{{print $1,$13,$14,$12,$4,length($13)}}' {input} \
             | sed -E 's/([0-9]*)\([A-Za-z]*\)/\1/g' \
             | sed 's/|/,/g' \
             | sed 's/\.t[0-9]//g' \
             | awk '$2 != "-" && $3 != "-"' \
+            | sort -t$'\t' -k1,1 -k6,6 \
+            | cut -f1,2,3,4,5 \
+            | awk -F'\t' -v a='' -v lin='' \
+            'a!=$1 {{
+                if(NR!=1) {{ 
+                    printf "%s\t", lin; 
+                    for (g in gos) printf "%s,", g; 
+                    printf "\t%s\t%s\t%s\n", $4, $5, "interpro"
+                }}; 
+                delete gos; split($3, gs,","); 
+                for (i in gs) gos[gs[i]]++; a=$1; lin=$1"\t"$2
+            }} 
+            a==$1 && $3!="-" {{ 
+                split($3,newg,","); 
+                for (i in newg) if (!(newg[i] in gos)) gos[newg[i]]++
+            }} 
+            END {{
+                printf "%s\t", lin; 
+                for (g in gos) printf "%s,", g; 
+                printf "\t%s\t%s\t%s\n", $4, $5, "interpro"
+            }}' \
+            | sed 's/\(.*\),/\1 /' \
+            | sed 's/,-,/,/g' \
             > {output}
         """
 
@@ -20,9 +46,10 @@ rule subset_emapper:
         "raw_data/gene_annotation/emapper.tsv"
     shell:
         r"""
-        cut -f 1,8,10 {input} \
+        awk -F'\t' -v OFS='\t' '{{print $1,$8,$10,$2,$9,"eggnog"}}' {input} \
             | sed 's/\.t[0-9]//g' \
             | awk '$2 != "-" && $3 != "-"' \
+            | sort -k1,1 | uniq \
             > {output}
         """
 
@@ -34,9 +61,25 @@ rule merge_emapper_interpro:
         "raw_data/gene_annotation/func_gene_annotation.tsv"
     shell:
         r"""
-        cat {input} \
-            | sort -t$'\t' -Vk1,1 -k3,3r \
-            | awk -F'\t' -v a='' 'a!=$1{{a = $1; print}}' \
+        awk -F'\t' -v OFS='\t' \
+            'FNR==NR{{a[$1]=$0}} 
+            FNR!=NR {{ 
+                if($1 in a) {{ 
+                    if(a[$1] ~ "GO") {{
+                        print a[$1]; 
+                    }} else {{
+                        print $0
+                    }}
+                    delete a[$1]
+                }} else {{
+                    print $0
+                }}
+            }} 
+            END {{
+                for (g in a) print a[g]
+            }}' \
+            <(sort -Vk1,1 {input.emapper}) \
+            <(sort -Vk1,1 {input.interpro}) \
             > {output}
         """
 
@@ -62,7 +105,7 @@ rule func_annotation_to_gff:
             <(sort -k1 -V {input.func_anno}) \
             > {output}
         
-        awk -v OFS='\t' '{{print $0,"-","-","-"}}' $TMPDIR/tmp_out.gff >> {output}
+        awk -v OFS='\t' '{{print $0,"-","-","-","-","-","-"}}' $TMPDIR/tmp_out.gff >> {output}
 
         find $TMPDIR -maxdepth 1 -type f -delete
         """
@@ -77,7 +120,8 @@ rule func_annotation_to_window_bed:
         r"""
         bedtools intersect -a {input.windows} -b {input.func_anno} -wao \
             | grep -v '\-1' \
-            | sed -E 's/([g][[:digit:]]*)([-g])/\1\t\2/g' \
-            | cut -d$'\t' -f1,2,3,13,14,15 \
+            | sed -E 's/(ID=g[[:digit:]]*)([-g])/\1\t\2/g' \
+            | cut -d$'\t' -f1,2,3,12,14,15,16,17,18 \
+            | awk -F'\t' -v OFS='\t' '{{split($4, a, "="); $4=a[2]; print}}' \
             > {output}
         """

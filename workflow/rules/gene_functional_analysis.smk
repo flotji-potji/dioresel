@@ -1,107 +1,123 @@
-rule picmin_genes:
+rule annotate_pcadapt_intersection:
     input:
-        picmin = rules.picmin_to_bed.output,
-        ann = "data/reference/vieillardii.gff"
+        intersections = expand("raw_data/test_intersect/pair_{p[0]}_{p[1]}/pcadapt.intersect.bed", p=samples),
+        annotation = rules.func_annotation_to_window_bed.output
     output:
-        "raw_data/gene_func_ana/picmin_pcadapt_genes.bed"
+        "raw_data/gene_func_ana/pcadapt_intersection.annotated.bed"
+    params:
+        spp_names = expand("pair_{p[0]}_{p[1]}", p=samples),
+        test_col = ",17"
     shell:
         r"""
-        bedtools intersect -a {input.picmin} -b {input.ann} -wao \
-            | awk '$11 ~ "gene"' \
-            | cut -f1,2,3,4,5,6,7,8,17 \
-            | awk -v OFS='\t' '{{split($9, a, "="); $9 = a[2]; print}}' \
+        bedtools intersect -a {input.annotation} \
+                           -b {input.intersections} \
+                           -names {params.spp_names} \
+                           -wo \
+            | cut -d$'\t' -f 1,2,3,4,5,6,7,8,9,10{params.test_col} \
             > {output}
         """
 
-rule filter_genes:
+use rule annotate_pcadapt_intersection as annotate_pcadapt with:
     input:
-        rules.picmin_genes.output
+        intersections = expand("raw_data/filtered_bed/pair_{p[0]}_{p[1]}/pcadapt.outliers.bed", p=samples),
+        annotation = rules.func_annotation_to_window_bed.output
     output:
-        "raw_data/gene_func_ana/filtered_genes.bed"
-    shell:
-        r"""
-        awk '$8 < 0.05' {input} > {output}
-        """
+        "raw_data/gene_func_ana/pcadapt.annotated.bed"
+    params:
+        test_col = ""
+
+use rule annotate_pcadapt_intersection as annotate_mktest with:
+    input:
+        intersections = expand("raw_data/filtered_bed/pair_{p[0]}_{p[1]}/mk_test.outliers.bed", p=samples),
+        annotation = rules.func_annotation_to_window_bed.output
+    output:
+        "raw_data/gene_func_ana/mktest.annotated.bed"
+    params:
+        test_col = ""
 
 rule annotate_picmin:
     input:
-        emapper = "data/emapper/emapper.annotations",
-        picmin = rules.filter_genes.output
+        intersections = rules.picmin_to_bed.output,
+        annotation = rules.func_annotation_to_window_bed.output
     output:
-        "raw_data/gene_func_ana/picmin_pcadapt_genes.annotated.bed"
-    params:
-        col = 9
+        "raw_data/gene_func_ana/picmin.annotated.bed"
     shell:
         r"""
-        awk -F'\t' -v OFS='\t' 'FNR==NR{{split($1,b,"."); 
-                                        a[b[1]]; c[b[1]] = $8; d[b[1]] = $10}}; 
-                                FNR!=NR{{gene = ${params.col};
-                                        if(gene in a) 
-                                        print $0, c[gene], d[gene]}}' \
-            <(sort -k1 -V {input.emapper}) \
-            <(sort -k{params.col} -V {input.picmin}) \
+        bedtools intersect -a {input.annotation} \
+                           -b <(awk '$7 < 0.05' {input.intersections}) \
+                           -wo \
+            | cut -d$'\t' -f 1,2,3,4,5,6,7,8,9,13 \
             > {output}
         """
 
-rule shared_genes:
+rule merge_pcadapt_mktest_annotation:
     input:
-        rules.annotate_picmin.output
+        pcadapt = rules.annotate_pcadapt_intersection.output,
+        mktest = rules.annotate_mktest.output,
     output:
-        "raw_data/gene_func_ana/shared_genes.bed"
+        "raw_data/gene_func_ana/pcadapt_mktest.annotated.bed"
     shell:
         r"""
-        awk '$5 == 5' {input} > {output}
-        """
-
-rule fr_clade_genes:
-    input:
-        rules.annotate_picmin.output
-    output:
-        "raw_data/gene_func_ana/fr_genes.bed"
-    shell:
-        r"""
-        awk '$5 <= 3' {input} > {output}
-        """
-
-rule sr_clade_genes:
-    input:
-        umb = "raw_data/mk_test/pair_cal_umb/mkt_table.tsv",
-        vie = "raw_data/mk_test/pair_cal_vie/mkt_table.tsv"
-    output:
-        "raw_data/gene_func_ana/sr_genes.bed"
-    shell:
-        r"""
-        cat {input.umb} {input.vie} \
-            | awk -F'\t' '$7 > $6 && $8 < 0.05' \
+        grep fst {input.pcadapt} \
+            | grep 'cal_spn\|cal_eru\|cal_ruf' \
+            | cut -f1,2,3,4,5,6,7,8,9,10 \
             > {output}
+        grep 'cal_umb\|cal_vie' {input.mktest} \
+            >> {output}
         """
 
-rule plot_gene_venn:
+rule go_enrichment_pcadapt_intersection:
     input:
-        rules.shared_genes.output,
-        rules.fr_clade_genes.output,
-        rules.sr_clade_genes.output
+        fg_genes = rules.annotate_pcadapt_intersection.output,
+        bg_genes = rules.merge_emapper_interpro.output
     output:
-        "results/gene_func_ana/gene_venn.jpg"
-    script:
-        "../scripts/plot_gene_venn.R"
-
-use rule annotate_picmin as annotate_sr_genes with:
-    input:
-        emapper = "data/emapper/emapper.annotations",
-        picmin = rules.sr_clade_genes.output
-    output:
-        "raw_data/gene_func_ana/sr_genes.annotated.bed"
+        fst = "results/gene_func_ana/pcadapt_intersection/fst_enrichment.jpg",
+        pair_pi = "results/gene_func_ana/pcadapt_intersection/pair_pi_enrichment.jpg",
+        pi = "results/gene_func_ana/pcadapt_intersection/pi_enrichment.jpg",
+        pi_bottom = "results/gene_func_ana/pcadapt_intersection/pi_bottom_enrichment.jpg",
+        tajimad = "results/gene_func_ana/pcadapt_intersection/tajimad_enrichment.jpg",
+        table = "raw_data/gene_func_ana/pcadapt_intersection/enrichment_table.Robject"
     params:
-        col = 1
-
-rule go_enrichment:
-    input:
-        shared = rules.shared_genes.output,
-        fr_genes = rules.fr_clade_genes.output,
-        sr_genes = rules.annotate_sr_genes.output
-    output:
-        "raw_data/gene_func_ana/go_enrichment.Robject",
-        "raw_data/gene_func_ana/go_enrichment.tsv"
+        plot_title = "pcadapt intersected with"
     script:
         "../scripts/topgo_enrichment.R"
+
+use rule go_enrichment_pcadapt_intersection as go_enrichment_pcadapt with:
+    input:
+        fg_genes = rules.annotate_pcadapt.output,
+        bg_genes = rules.merge_emapper_interpro.output
+    output:
+        unfiltered = "results/gene_func_ana/pcadapt/enrichment.jpg",
+        table = "raw_data/gene_func_ana/pcadapt/enrichment_table.Robject"
+    params:
+        plot_title = "pcadapt"
+
+use rule go_enrichment_pcadapt_intersection as go_enrichment_mktest with:
+    input:
+        fg_genes = rules.annotate_mktest.output,
+        bg_genes = rules.merge_emapper_interpro.output
+    output:
+        unfiltered = "results/gene_func_ana/mktest/enrichment.jpg",
+        table = "raw_data/gene_func_ana/mktest/enrichment_table.Robject"
+    params:
+        plot_title = "MKT"
+
+use rule go_enrichment_pcadapt_intersection as go_enrichment_pcadapt_mktest with:
+    input:
+        fg_genes = rules.merge_pcadapt_mktest_annotation.output,
+        bg_genes = rules.merge_emapper_interpro.output
+    output:
+        unfiltered = "results/gene_func_ana/pcadapt_mktest/enrichment.jpg",
+        table = "raw_data/gene_func_ana/pcadapt_mktest/enrichment_table.Robject"
+    params:
+        plot_title = "pcadapt/fst - MKT"
+
+use rule go_enrichment_pcadapt_intersection as go_enrichment_picmin with:
+    input:
+        fg_genes = rules.annotate_picmin.output,
+        bg_genes = rules.merge_emapper_interpro.output
+    output:
+        unfiltered = "results/gene_func_ana/picmin/enrichment.jpg",
+        table = "raw_data/gene_func_ana/picmin/enrichment_table.Robject"
+    params:
+        plot_title = "picmin"
