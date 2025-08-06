@@ -3,7 +3,7 @@
 #SBATCH --job-name=emapper
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6
-#SBATCH --mem=4G
+#SBATCH --mem=16G
 #SBATCH --time=0-10:00:00
 #SBATCH --partition=basic,short
 #SBATCH --output=/lisc/scratch/botany/frschmidt/mk_test/logs/emapper%j.%a.log
