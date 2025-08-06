@@ -1,3 +1,87 @@
+rule goi_intersect_all:
+    # goi = genes of interest
+    input:
+        goi = "data/paun_et_al/genes_of_interest.bed",
+        pcadapt = rules.outliers_pcadapt.output,
+        mktest = rules.outliers_sel_mk_test.output,
+        fst = rules.outliers_fst.output,
+        pi = rules.outliers_pi.output,
+        pi_bottom = rules.outliers_pi_bottom.output,
+        pair_pi = rules.outliers_pair_pi.output,
+        pair_pi_bottom = rules.outliers_pair_pi_bottom.output,
+        tajimad = rules.outliers_sel_tajimad.output,
+        pair_tajimad = rules.outliers_sel_pair_tajimad.output,
+    output:
+        "raw_data/test_intersect/pair_{sp1}_{sp2}/goi_intersect.bed"
+    params:
+        names = "pi pi_bottom pair_pi pair_pi_bottom tajimad pair_tajimad fst pcadapt mktest"
+    shell:
+        r"""
+        bedtools intersect -a {input.goi} \
+                           -b {input.pi} {input.pi_bottom} \
+                              {input.pair_pi} {input.pair_pi_bottom} \
+                              {input.tajimad} {input.pair_tajimad} \
+                              {input.fst} \
+                              {input.pcadapt} {input.mktest} \
+                           -names {params.names} -wo \
+            | cut -f1,2,3,4,5,6 \
+            > {output}
+        """        
+
+use rule pi_window_count as goi_window_count with:
+    input:
+        rules.goi_intersect_all.output
+    output:
+        "raw_data/test_intersect/pair_{sp1}_{sp2}/goi_count.tsv"
+    params:
+        col = 6
+
+use rule all_pi_counts as all_goi_counts with:
+    input:
+        expand("raw_data/test_intersect/pair_{p[0]}_{p[1]}/goi_count.tsv", p=samples) 
+    output:
+        "results/test_intersect/goi_count.merged.tsv"
+    
+rule plot_goi_counts:
+    input:
+        rules.all_goi_counts.output
+    output:
+        "results/test_intersect/goi_intersection_heatmap.svg"
+    script:
+        "../scripts/plot_goi_heatmap.R"
+    
+rule intersect_all_tests:
+    input:
+        annotation = "results/gene_annotation/func_gene_annotation.windows.bed",
+        pcadapt = rules.outliers_pcadapt.output,
+        mktest = rules.outliers_sel_mk_test.output,
+        fst = rules.outliers_fst.output,
+        pi = rules.outliers_pi.output,
+        pi_bottom = rules.outliers_pi_bottom.output,
+        pair_pi = rules.outliers_pair_pi.output,
+        pair_pi_bottom = rules.outliers_pair_pi_bottom.output,
+        tajimad = rules.outliers_sel_tajimad.output,
+        pair_tajimad = rules.outliers_sel_pair_tajimad.output,
+    output:
+        "raw_data/test_intersect/pair_{sp1}_{sp2}/all_tests_intersect.bed"
+    shell:
+        r"""
+        bedtools multiinter -i {input} \
+            | bedtools expand -c 5 \
+            | sort -k5,5n \
+            | bedtools groupby -g 5 -c 6,7,8,9,10,11,12,13,14,15 \
+                               -o sum,sum,sum,sum,sum,sum,sum,sum,sum,sum \
+            > {output}
+        """
+
+rule plot_all_tests_intersection:
+    input:
+        expand("raw_data/test_intersect/pair_{p[0]}_{p[1]}/all_tests_intersect.bed", p=samples) 
+    output:
+        "results/test_intersect/all_tests_intersection.svg"
+    script:
+        "../scripts/plot_all_tests_heatmap.R"
+
 rule pcadapt_intersect_all:
     input:
         pcadapt = rules.outliers_pcadapt.output,
@@ -128,10 +212,10 @@ rule plot_test_intersect:
         test_outputs = rules.all_merged_test_outputs.output,
         test_summary = rules.merge_all_test_summaries.output
     output:
-        "results/test_intersect/pcadapt/fst.jpg",
-        "results/test_intersect/pcadapt/pi_between.jpg",
-        "results/test_intersect/pcadapt/pi_within.jpg",
-        "results/test_intersect/pcadapt/tajimad.jpg"
+        "results/test_intersect/pcadapt/fst.svg",
+        "results/test_intersect/pcadapt/pi_between.svg",
+        "results/test_intersect/pcadapt/pi_within.svg",
+        "results/test_intersect/pcadapt/tajimad.svg"
     script:
         "../scripts/plot_test_intersect.R"
         
