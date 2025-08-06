@@ -11,15 +11,6 @@ rule intersect_pcadapt_fst:
         cut -f 7,8,9,10,11 {output.pcadapt} > {output.fst}
         """
 
-#rule scale_pcadapt:
-#    input:
-#        rules.intersect_pcadapt_fst.output.pcadapt,
-#        rules.intersect_pcadapt_fst.output.fst
-#    output:
-#        "raw_data/picmin/pair_{sp1}_{sp2}/pcadapt.scaled.bed"
-#    script:
-#        "../scripts/pcadapt_scaling.py"
-
 rule scale_pcadapt:
     input:
         fst = rules.filter_fst.output,
@@ -29,7 +20,7 @@ rule scale_pcadapt:
     shell:
         r"""
         fst_mean=$(awk '{{total=$4}} END{{print total/NR}}' {input.fst}) 
-        awk -v mean=$fst_mean -v OFS='\t' '$4 = $4/mean' {input.pcadapt} > {output}
+        awk -v mean=$fst_mean -v OFS='\t' '$5 = $5/mean' {input.pcadapt} > {output}
         """
 
 use rule filter_pcadapt as filter_scaled_pcadapt with:
@@ -40,7 +31,7 @@ use rule filter_pcadapt as filter_scaled_pcadapt with:
 
 rule picmin_reduce_bed_and_create_df_pcadapt:
     input:
-        rules.scale_pcadapt.output
+        rules.sort_pcadapt.output
     output:
         "raw_data/picmin/pair_{sp1}_{sp2}/pcadapt_picmin.Robject"
     params:

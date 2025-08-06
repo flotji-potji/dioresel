@@ -10,7 +10,7 @@ load(file = input_picmin_file)
 
 output_bed <- data.frame(picMin_results$redundan,
                          picMin_results$scaffold,
-                         picMin_results$scaffold + 9999,
+                         picMin_results$scaffold + 10000,
                          picMin_results$numLin,
                          picMin_results$n_est,
                          picMin_results$p,

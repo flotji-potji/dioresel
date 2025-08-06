@@ -25,7 +25,7 @@ pval_small <- snakemake@params$pval_small
 
 ### EXECUTION
 lineage_df <- read.delim(input_bed, header = FALSE)
-lineage_df$emp_p <- PicMin:::EmpiricalPs(lineage_df$V4,
+lineage_df$emp_p <- PicMin:::EmpiricalPs(lineage_df$V5,
                                          large_i_small_p = pval_small)
 colnames(lineage_df)[1] <- "scaff"
 colnames(lineage_df)[2] <- "start"

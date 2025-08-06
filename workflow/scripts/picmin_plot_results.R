@@ -1,8 +1,8 @@
 ### ENVIRONMENT
-library(tidyverse)
 if (!require(ggVennDiagram)) {
   devtools::install_github("gaospecial/ggVennDiagram")
 }
+library(tidyverse)
 library(ggVennDiagram)
 
 ### VARIABLES
@@ -98,24 +98,29 @@ dev.off()
 # padj manhattan plot
 jpeg(
   output_padj_file,
-  width = 20,
-  height = 25,
+  width = 5.8,
+  height = 7.6,
   units = "in",
-  res = 100
+  res = 256,
+  family = "ArialMT"
 )
-ggplot(data = picMin_results,
-       aes(x = start/1e6,
+picMin_results %>%
+  ggplot(
+       aes(x = start / 1e6,
            y = -log10(pooled_q),
            fill = factor(n_est))) +
   facet_wrap(~ scaffold, scales = "free_x") +
   geom_point(shape = 21,
-             size = 4) +
+             size = 1) +
   geom_hline(aes(yintercept = -log10(0.05)),
              lty=2)+
   scale_fill_manual("Number of\nLineages\n",values = col_pal)+
-  scale_y_continuous(expression(-log[10]*"(q-value)"))+
+  scale_y_continuous(expression(-log[10]*"(p-adj)"))+
   scale_x_continuous("Position in Scaffold (Mbp)")+
   theme_classic() + 
   theme(strip.background = element_blank(),
-        strip.text = element_text(face = "bold"))
+        strip.text = element_text(face = "bold"),
+        axis.text = element_text(size = 8),
+        text = element_text(size = 8))
 dev.off()
+
