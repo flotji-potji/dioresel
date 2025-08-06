@@ -2,53 +2,23 @@ samples = [("cal", "spn"), ("cal", "eru"), ("cal", "ruf"), ("cal", "umb"), ("cal
 
 rule all:
     input:
-        # FST
-        #expand("results/fst_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.fst.jpg", p=samples),
-        ## MKT
-        #expand("raw_data/mk_test/pair_{p[0]}_{p[1]}/mkt_table.tsv", p=samples),
-        ## Tajima's D and PI
-        #expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
-        #expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
-        #expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
-        #expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
-        #expand("results/pi_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
-        #expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
-        # pcadapt
-        #expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples),
-        #"raw_data/harvester/pair_fla_vie/snps_of_interest.tsv",
-        #"raw_data/harvester/pair_fla_umb/snps_of_interest.tsv",
-        # pi species windows
-        #"results/pi_within_intersect/pi_summary.jpg",
-        #"results/pi_within_intersect/pi_bottom_summary.jpg",
-        #"results/pi_between_intersect/pi_summary.jpg",
-        #"results/pi_between_intersect/pi_bottom_summary.jpg",
-        ## pi shared-tree windows
-        #"results/pi_within_intersect_tree/pi_summary.jpg",
-        #"results/pi_between_intersect_tree/pi_summary.jpg",
-        # test window intersects
-        "results/test_intersect/pcadapt/fst.jpg",
+        # test window intersect
+        "results/test_intersect/pcadapt/fst.svg",
+        "results/test_intersect/goi_intersection_heatmap.svg",
+        "results/test_intersect/all_tests_intersection.svg",
         ## PicMin
-        #"results/picmin/pcadapt/picmin_results.pval.jpeg",
-        #"results/picmin/pcadapt/picmin_results.padj.jpeg",
-        #"results/picmin/pcadapt/picmin_results.lin_venn.jpeg",
-        #"results/picmin/pcadapt/picmin_results.est_venn.jpeg",
-        #"results/picmin/pcadapt/picmin_results.lin_est_heat.jpeg",
-        #"results/picmin/fst/picmin_results.pval.jpeg",
-        #"results/picmin/fst/picmin_results.padj.jpeg",
-        #"results/picmin/fst/picmin_results.lin_venn.jpeg",
-        #"results/picmin/fst/picmin_results.est_venn.jpeg",
-        #"results/picmin/fst/picmin_results.lin_est_heat.jpeg",
-        #"results/picmin/tajimad/picmin_results.pval.jpeg",
-        #"results/picmin/tajimad/picmin_results.padj.jpeg",
-        #"results/picmin/tajimad/picmin_results.lin_venn.jpeg",
-        #"results/picmin/tajimad/picmin_results.est_venn.jpeg",
-        #"results/picmin/tajimad/picmin_results.lin_est_heat.jpeg",
-        #"raw_data/picmin/picmin_pcadapt_results.bed",
+        "results/picmin/pcadapt/picmin_results.padj.jpeg",
         ## gene func
-        #"results/gene_func_ana/gene_venn.jpg"
-        #"raw_data/gene_func_ana/go_enrichment.Robject",
-        #"raw_data/gene_func_ana/go_enrichment.tsv"
-        "raw_data/gene_annotation/func_gene_annotation.windows.bed",
+        "results/gene_func_ana/pcadapt_intersection/fst_enrichment.jpg",
+        "results/gene_func_ana/pcadapt/enrichment.jpg",
+        "results/gene_func_ana/mktest/enrichment.jpg",
+        "results/gene_func_ana/pcadapt_mktest/enrichment.jpg",
+        "results/gene_func_ana/picmin/enrichment.jpg",
+        # superexact/upset
+        "results/superexact/pcadapt_intersection/gene.pdf",
+        "results/superexact/pcadapt/gene.pdf",
+        "results/superexact/pcadapt_mktest/gene.pdf",
+        
 
 # FST
 include: "rules/vcf_preprocessing.smk"
@@ -73,3 +43,5 @@ include: "rules/picmin_analysis.smk"
 # gene func
 include: "rules/gene_functional_annotation.smk"
 include: "rules/gene_functional_analysis.smk"
+# superexact/upset
+include: "rules/parallel_adaptation.smk"
