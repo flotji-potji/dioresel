@@ -39,4 +39,12 @@ snakemake -c 1 --use-conda
 snakemake -c 1 --use-conda --profile config/slurm
 ```
 
+(Or: 7. Try to run the ```batch_smk_dioresel.sh``` slurm-execution script.)
+```
+sbatch batch_smk_dioresel.sh
+```
+
 It is advised to adjust resource usage of jobs to match their cluster performance. This can be done in the `config.yaml` file in `config/slurm`, just adjust the rules individual resources. This workflow was tested on RedHat Linux 11 using the Life Science Compute Cluster at the University of Vienna.
+
+## Workflow graph
+Find it [here](./workflow_graph.pdf)

@@ -2,27 +2,23 @@ samples = [("cal", "spn"), ("cal", "eru"), ("cal", "ruf"), ("cal", "umb"), ("cal
 
 rule all:
     input:
-        # FST
-        expand("results/fst_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.fst.jpg", p=samples),
-        # MKT
-        expand("raw_data/mk_test/pair_{p[0]}_{p[1]}/mkt_table.tsv", p=samples),
-        # Tajima's D and PI
-        expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
-        expand("results/pi_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
-        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.jpg", p=samples),
-        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/sp_{p[1]}.filtered.jpg", p=samples),
-        expand("results/pi_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
-        expand("results/tajimad_plots/pair_{p[0]}_{p[1]}/pair_{p[0]}_{p[1]}.jpg", p=samples),
-        # pcadapt
-        #expand("raw_data/harvester/pair_{p[0]}_{p[1]}/snps_of_interest.tsv", p=samples),
-        # pi species windows
-        "results/pi_within_intersect/pi_summary.jpg",
-        "results/pi_within_intersect/pi_bottom_summary.jpg",
-        "results/pi_between_intersect/pi_summary.jpg",
-        "results/pi_between_intersect/pi_bottom_summary.jpg",
-        # pi shared-tree windows
-        "results/pi_within_intersect_tree/pi_summary.jpg",
-        "results/pi_between_intersect_tree/pi_summary.jpg"
+        # test window intersect
+        "results/test_intersect/pcadapt/fst.svg",
+        "results/test_intersect/goi_intersection_heatmap.svg",
+        "results/test_intersect/all_tests_intersection.svg",
+        ## PicMin
+        "results/picmin/pcadapt/picmin_results.padj.jpeg",
+        ## gene func
+        "results/gene_func_ana/pcadapt_intersection/fst_enrichment.jpg",
+        "results/gene_func_ana/pcadapt/enrichment.jpg",
+        "results/gene_func_ana/mktest/enrichment.jpg",
+        "results/gene_func_ana/pcadapt_mktest/enrichment.jpg",
+        "results/gene_func_ana/picmin/enrichment.jpg",
+        # superexact/upset
+        "results/superexact/pcadapt_intersection/gene.pdf",
+        "results/superexact/pcadapt/gene.pdf",
+        "results/superexact/pcadapt_mktest/gene.pdf",
+        
 
 # FST
 include: "rules/vcf_preprocessing.smk"
@@ -41,3 +37,11 @@ include: "rules/pcadapt_peak_finder.smk"
 include: "rules/bed_filter_and_outlier.smk"
 include: "rules/species_pi_window_intersect.smk"
 include: "rules/tree_pi_window_intersect.smk"
+include: "rules/test_window_intersect.smk"
+# PicMin
+include: "rules/picmin_analysis.smk"
+# gene func
+include: "rules/gene_functional_annotation.smk"
+include: "rules/gene_functional_analysis.smk"
+# superexact/upset
+include: "rules/parallel_adaptation.smk"

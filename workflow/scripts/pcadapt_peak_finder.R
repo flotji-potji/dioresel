@@ -1,6 +1,12 @@
 ### ENVIRONMENT
 library(pcadapt)
 library(tidyverse)
+options(error = quote({
+  dump.frames(to.file=T, dumpto='last.dump')
+  load('last.dump.rda')
+  print(last.dump)
+  q()
+}))
 
 ### FUNCTIONS
 manhattan_data_frame <- function(df, snps_of_interest) {
@@ -78,10 +84,14 @@ peaks_df_intersect <- peaks %>%
   inner_join(pcadapt.df, by = "chrom") %>%
   filter(position >= rangeLower & position <= rangeUpper)
 
+print("hello")
+
 snps_of_interest <- peaks_df_intersect %>%
-  filter(pvalue < pval_threshold) 
+  filter(pvalue < pval_threshold)
   #filter(range.1 < quantile(peaks_df_intersect$range.1, 0.75)) %>%
   #filter(spacing < quantile(peaks_df_intersect$spacing, 0.75))
+
+print("hello")
 
 # plot manhattan plot of all scaffolds
 

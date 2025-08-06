@@ -8,9 +8,19 @@ rule filter_fst:
         awk '($5 > 3 && $4 > 0){{print}}' {input} > {output}
         """
 
-rule outliers_fst:
+rule sort_fst:
     input:
         rules.filter_fst.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/fst.sorted.bed"
+    shell:
+        """
+        bedtools sort -i {input} > {output}
+        """
+
+rule outliers_fst:
+    input:
+        rules.sort_fst.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/fst.outliers.bed"
     params:
@@ -35,21 +45,33 @@ rule filter_pi:
         awk '($5 > 3 && $4 != "nan"){{print}}' {input} > {output}
         """
 
+use rule sort_fst as sort_pi with:
+    input:
+        rules.filter_pi.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi.sorted.bed"
+
 use rule filter_pi as filter_pair_pi with:
     input:
         rules.pair_pi_to_bed.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi_pair.filtered.bed"
 
+use rule sort_fst as sort_pair_pi with:
+    input:
+        rules.filter_pair_pi.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi_pair.sorted.bed"
+
 use rule outliers_fst as outliers_pi with:
     input:
-        rules.filter_pi.output
+        rules.sort_pi.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi.outliers.bed"
 
 use rule outliers_fst as outliers_pi_bottom with:
     input:
-        rules.filter_pi.output
+        rules.sort_pi.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi.outliers.bottom.bed"
     params:
@@ -58,13 +80,13 @@ use rule outliers_fst as outliers_pi_bottom with:
 
 use rule outliers_pi as outliers_pair_pi with:
     input:
-        rules.filter_pair_pi.output
+        rules.sort_pair_pi.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi_pair.outliers.bed"
 
 use rule outliers_pi_bottom as outliers_pair_pi_bottom with:
     input:
-        rules.filter_pair_pi.output
+        rules.sort_pair_pi.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/pi_pair.outliers.bottom.bed"
 
@@ -74,15 +96,39 @@ use rule filter_pi as filter_tajimad with:
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad.filtered.bed"
 
+use rule sort_fst as sort_tajimad with:
+    input:
+        rules.filter_tajimad.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad.sorted.bed"
+
+rule filter_tajimad_sel:
+    input:
+        rules.sort_tajimad.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad.sel.filtered.bed"
+    shell:
+        """
+        awk -v OFS='\t' '$4 < 0 {{$4 = $4 * -1; print}}' {input} \
+            | bedtools sort \
+            > {output}
+        """
+
 use rule filter_tajimad as filter_pair_tajimad with:
     input:
         rules.pair_tajimad_to_bed.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad_pair.filtered.bed"
 
+use rule sort_fst as sort_pair_tajimad with:
+    input:
+        rules.filter_pair_tajimad.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad_pair.sorted.bed"
+
 use rule outliers_fst as outliers_sel_tajimad with:
     input:
-        rules.filter_tajimad.output
+        rules.sort_tajimad.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad.sel_outliers.bed"
     params:
@@ -91,7 +137,7 @@ use rule outliers_fst as outliers_sel_tajimad with:
         
 use rule outliers_sel_tajimad as outliers_sel_pair_tajimad with:
     input:
-        rules.filter_pair_tajimad.output
+        rules.sort_pair_tajimad.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/tajimad_pair.sel_outliers.bed"
 
@@ -105,6 +151,12 @@ rule filter_pcadapt:
         awk '($6 > 3 && $5 != "NA" && $4 != "NA"){{print}}' {input} > {output}
         """
 
+use rule sort_fst as sort_pcadapt with:
+    input:
+        rules.filter_pcadapt.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/pcadapt.sorted.bed"
+
 rule outliers_pcadapt:
     input:
         rules.filter_pcadapt.output
@@ -114,12 +166,18 @@ rule outliers_pcadapt:
         prob = 0.05 
     shell:
         r"""
-        awk '$4 > -log({params.prob})/log(10) {{print}}' {input} > {output}
+        awk '$5 > -log({params.prob})/log(10) {{print}}' {input} > {output}
         """
+
+use rule sort_fst as sort_mk_test with:
+    input:
+        rules.mk_test_to_window_bed.output
+    output:
+        "raw_data/filtered_bed/pair_{sp1}_{sp2}/mk_test.sorted.bed"
 
 rule outliers_sel_mk_test:
     input:
-        rules.mk_test_to_window_bed.output
+        rules.sort_mk_test.output
     output:
         "raw_data/filtered_bed/pair_{sp1}_{sp2}/mk_test.outliers.bed"
     params:

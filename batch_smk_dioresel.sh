@@ -13,9 +13,5 @@ conda activate dioresel
 
 module list
 
-### VARIABLES
-WD=/lisc/scratch/botany/frschmidt/dioresel
-slurm_config=${WD}/config/slurm
-
 ### EXECUTION
-snakemake -c 1 --profile ${slurm_config} --use-conda 
+snakemake -c 1 --workflow-profile config/slurm --use-conda 

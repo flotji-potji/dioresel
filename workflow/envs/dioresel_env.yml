@@ -2,6 +2,7 @@ name: dioresel
 channels:
   - conda-forge
   - bioconda
+  - pip
 dependencies:
   - bcftools=1.21
   - plink=1.90b6.21
@@ -13,7 +14,11 @@ dependencies:
   - snakemake-storage-plugin-fs=1.1.1
   - r-base=4.4.1
   - r-essentials=4.4
+  - r-pcadapt=4.4.0
+  - r-devtools=2.4.5
   - bedtools=2.31.1 
   - transdecoder=5.7.1
   - snpeff=5.2
-  - qt=4
+  - qt=5
+  - numpy
+  - scipy
