@@ -99,8 +99,6 @@ print("hello")
 don <- manhattan_data_frame(pcadapt.df, snps_of_interest)
 don_subset <- subset(don, is_highlight == "yes")
 
-print("hello")
-
 jpeg(
   output.peak_find,
   width = 25,
